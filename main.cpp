@@ -166,9 +166,45 @@ void point_to_pixel(deque<Point*> &map_points, Pixel *px, const vector<float> si
     }
     //Associe le point le plus proche du pixel
     px->set_z(map_points[indice_pt]->read_z());
-    // cout << indice_pt;
     px->set_point(map_points[indice_pt]);
-    px->set_color(size_MNT[2], size_MNT[3]); //associe la couleur à l'altitude (z)
+    
+    //Association couleurs
+    // px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+    //Création de la color palette
+    int **haxby;
+    haxby = new int*[11]; //11 couleurs différentes
+    for (int i=0; i<11; i++)
+    {
+        haxby[i] = new int[3];
+    }
+    haxby[0][0] = 37;
+    haxby[0][1] = 57;
+    haxby[0][3] = 175;
+
+    haxby[1][0] = 37;
+    haxby[1][1] = 57;
+    haxby[1][3] = 175;
+
+    haxby[2][0] = 37;
+    haxby[2][1] = 57;
+    haxby[2][3] = 175;
+
+    haxby[3][0] = 37;
+    haxby[3][1] = 57;
+    haxby[3][3] = 175;
+
+    haxby[4][0] = 37;
+    haxby[4][1] = 57;
+    haxby[4][3] = 175;
+
+    haxby[5][0] = 37;
+    haxby[5][1] = 57;
+    haxby[5][3] = 175;
+
+
+
+    px->compute_colorRGB(size_MNT[2], size_MNT[3]); //associe la couleur à l'altitude (z)
+
 }
 
 
@@ -183,6 +219,7 @@ void create_picture(Pixel** picture[], int picture_lenght,const vector<float> si
     float dx = size_MNT[0]/picture_lenght; 
     float dy = size_MNT[1]/picture_head; 
     // Créations des pixels de notre image
+    px->compute_color(size_MNT[2], size_MNT[3]); //associe la couleur à l'altitude (z)
     for (int i = 0; i< picture_lenght; i++)
     {//hauteur
         picture[i] = new Pixel*[picture_head];
@@ -192,7 +229,7 @@ void create_picture(Pixel** picture[], int picture_lenght,const vector<float> si
             float pos_x = dx*i + size_MNT[4] ; //permet de placer les pixels vers la même positions que les points
             float pos_y = dy*j + size_MNT[5];
             Pixel *px = new Pixel(pos_x,pos_y); 
-            // //association de chaque pixel avec un point du MNT
+            // //association de chaque pixel avec un point du MNT avec couleurs
             point_to_pixel(map_points,px, size_MNT);
             picture[i][j] = px; //colone/ligne attention
             cout << i << endl;

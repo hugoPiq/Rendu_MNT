@@ -8,7 +8,7 @@ Pixel::Pixel()
 {
 }
 
-void Pixel::set_color(float min, float max)
+void Pixel::compute_color(float min, float max)
 {
     int value_white = 15; //valeur arbitraire de blanc 
     int value_black = 0;
@@ -65,17 +65,48 @@ void Pixel::set_point(Point *pt)
     m_point = pt;
 }
 
-// void Pixel::set_color(int r, int g, int b)
-// {
-//     if (r>255 || r< 0)
-//     {
-//         cout << "Mauvaise valeur de rouge" << endl;
-//     }
-//     else
-//     {
-//         m_colorRGB.push_back(r);
-//     }
-// }
+void Pixel::set_colorRGB(int r, int g, int b)
+{
+    if (r>255 || r< 0)
+    {
+        cout << "Mauvaise valeur de rouge" << endl;
+    }   
+    else
+    {
+        m_colorRGB[0] = r;
+    }
+    if (g>255 || g< 0)
+    {
+        cout << "Mauvaise valeur de vert" << endl;
+    }   
+    else
+    {
+        m_colorRGB[1] = g;
+    }
+    if (b>255 || b< 0)
+    {
+        cout << "Mauvaise valeur de bleu" << endl;
+    }   
+    else
+    {
+        m_colorRGB[2] = b;
+    }
+}
+
+void Pixel::compute_colorRGB(float min, float max)
+{
+    int value_white = 15; //valeur arbitraire de blanc 
+    int value_black = 0;
+    float coef_lin = (value_white - value_black)/(max-min); //calcul du coef directeur de la fonction linéaire reliant la couleur à la profondeur
+    
+    int r = 0, g = 0, b = 0;
+    
+    // m_color = abs(m_z*coef_lin - (max*value_white)/(max-min)); //entier
+    set_colorRGB(r,g,b)
+
+
+
+}
 
 Pixel::~Pixel()
 {}

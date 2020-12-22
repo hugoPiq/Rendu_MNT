@@ -18,12 +18,13 @@ class Pixel
     float read_y();
     float read_z();
     int read_color();
-    // void set_color(int r, int g, int b);
+    void set_colorRGB(int r, int g, int b);
     //mutateur
     void set_x(float x);
     void set_y(float y);
     void set_z(float z);
-    void set_color(float min, float max);
+    void compute_color(float min, float max);
+    void compute_colorRGB(float min, float max);
     void set_point(Point *pt);
 
     ~Pixel();
@@ -33,7 +34,7 @@ class Pixel
     float m_y;
     float m_z; 
     int m_color;
-    // vector<int> m_colorRGB();
+    int m_colorRGB[3];
     Point *m_point = NULL;
 };
 #endif
