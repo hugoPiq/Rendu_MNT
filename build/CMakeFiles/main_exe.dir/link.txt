@@ -1,0 +1,1 @@
+/usr/bin/c++  -Wall -Wextra -std=c++11 -g  -rdynamic CMakeFiles/main_exe.dir/main.cpp.o CMakeFiles/main_exe.dir/point.cpp.o CMakeFiles/main_exe.dir/pixel.cpp.o  -o main_exe -lproj 

@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <fstream>
 #include "point.h"
+#include <vector>
+#include <deque>
 using namespace std;
 
 class Pixel
@@ -16,6 +18,7 @@ class Pixel
     float read_y();
     float read_z();
     int read_color();
+    // void set_color(int r, int g, int b);
     //mutateur
     void set_x(float x);
     void set_y(float y);
@@ -30,6 +33,7 @@ class Pixel
     float m_y;
     float m_z; 
     int m_color;
+    // vector<int> m_colorRGB();
     Point *m_point = NULL;
 };
 #endif

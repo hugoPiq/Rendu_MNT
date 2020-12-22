@@ -1,0 +1,60 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/main.cpp
+cstdlib
+-
+iostream
+-
+ostream
+-
+fstream
+-
+point.h
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/point.h
+deque
+-
+vector
+-
+cmath
+-
+pixel.h
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/pixel.h
+
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/pixel.cpp
+pixel.h
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/pixel.h
+iostream
+-
+
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/pixel.h
+cstdlib
+-
+fstream
+-
+point.h
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/point.h
+vector
+-
+deque
+-
+
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/point.cpp
+point.h
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/point.h
+iostream
+-
+
+/home/hugo/Documents/ENSTA 2 ANNE/C++/BE/Rendu_MNT/point.h
+cstdlib
+-
+fstream
+-
+proj.h
+-
+

@@ -65,5 +65,17 @@ void Pixel::set_point(Point *pt)
     m_point = pt;
 }
 
+// void Pixel::set_color(int r, int g, int b)
+// {
+//     if (r>255 || r< 0)
+//     {
+//         cout << "Mauvaise valeur de rouge" << endl;
+//     }
+//     else
+//     {
+//         m_colorRGB.push_back(r);
+//     }
+// }
+
 Pixel::~Pixel()
 {}

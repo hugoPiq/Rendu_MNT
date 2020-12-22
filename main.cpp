@@ -7,7 +7,7 @@
 #include <vector>
 #include <cmath>
 #include "pixel.h"
-#include <algorithm>
+
 using namespace std;
 
 
@@ -66,22 +66,31 @@ void projection(deque<Point*> &map_points, vector<float> &size_MNT)
     int size = map_points.size();
     int length ;
     int head;
-    //iniatilsation des premières valeurs
-    map_points[0]->projection();
+    
+    //Initialisation projection
+    PJ_CONTEXT *C = PJ_DEFAULT_CTX;
+    PJ *P = proj_create_crs_to_crs (C,"EPSG:4326","EPSG:2154",NULL); ;
+    PJ* P_for_GIS = proj_normalize_for_visualization(C, P);
+    proj_destroy(P);
+    P = P_for_GIS;  
+    PJ_COORD coord_wgs84, coord_lambert93;
+
+     //iniatilsation des premières valeurs
+    map_points[0]->projection(P, coord_wgs84, coord_lambert93);
     int head_max = map_points[0]->read_y(); // y ou lat
     int head_min = map_points[0]->read_y();
     int length_min = map_points[0]->read_x(); //x ou alt
     int length_max = map_points[0]->read_x();
     float altitude_min = map_points[0]->read_z();
     float altitude_max = map_points[0]->read_z();
-    
+
     //parcours de toute le deque
     for (int i = 1 ; i < size; i++)
     // for (deque<Point*>::const_iterator it = map_points.begin(); it != map_points.end(); ++it)
     // for (auto it=map_points.begin(); it!= map_points.end(); ++it)
     {
-        map_points[i]->projection();
-        //Déterminer la longeur mini
+        map_points[i]->projection(P, coord_wgs84, coord_lambert93);
+        // Déterminer la longeur mini
         if (map_points[i]->read_x() < length_min)
         {
             length_min = map_points[i]->read_x();
@@ -112,7 +121,6 @@ void projection(deque<Point*> &map_points, vector<float> &size_MNT)
         {
             altitude_min = map_points[i]->read_z();
         }
-        cout << i <<endl;
     }
     //Largeur de l'image:
     length = length_max - length_min;
@@ -125,7 +133,9 @@ void projection(deque<Point*> &map_points, vector<float> &size_MNT)
     size_MNT[4] = length_min; //pour positionner correctement les pixels par rapport aux points
     // cout << length_min;
     size_MNT[5] = head_max; 
-
+    //Désalocation
+    proj_destroy (P);
+    proj_context_destroy (C);
 }   
 
 
@@ -185,7 +195,7 @@ void create_picture(Pixel** picture[], int picture_lenght,const vector<float> si
             // //association de chaque pixel avec un point du MNT
             point_to_pixel(map_points,px, size_MNT);
             picture[i][j] = px; //colone/ligne attention
-            // cout << px->m_y << "\n";
+            cout << i << endl;
         }
     }
 }   
@@ -224,17 +234,17 @@ int main()
     int picture_length = 800;
     
     //PGM sans triangulation methode bourrin très long ....
-    // picture_PGM_v1(file_name, picture_length);
+    picture_PGM_v1(file_name, picture_length);
 
 
     /* TESTS:*/
-    deque<Point*> map_points; //vector vide
-    deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
+    // deque<Point*> map_points; //vector vide
+    // deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
     
-    // cout << map_points.size(); //2681710 elts
+    // // cout << map_points.size(); //2681710 elts
     
-    //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
-    vector<float> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
-    projection(map_points, size_MNT);
-    return EXIT_SUCCESS;
+    // //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
+    // vector<float> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
+    // projection(map_points, size_MNT);
+    // return EXIT_SUCCESS;
 }       

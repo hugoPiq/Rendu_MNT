@@ -14,7 +14,7 @@ class Point
         float read_x();
         float read_y();
         float read_z();
-        void projection();
+        void projection(PJ *P, PJ_COORD coord_wgs84, PJ_COORD coord_lambert93);
         // friend ostream& operator<<(ostream& stream, const Point& r);//utile ?
         friend istream& operator>>(istream& stream, Point& pt); 
     // private:
