@@ -21,5 +21,4 @@ Rendu_MNT
 # build directory
 make
 build
-# Annexes
-*.txt
+
