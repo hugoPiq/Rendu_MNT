@@ -8,11 +8,11 @@ Pixel::Pixel()
 {
 }
 
-void Pixel::compute_color(float min, float max)
+void Pixel::compute_color(double min, double max)
 {
     int value_white = 15; //valeur arbitraire de blanc 
     int value_black = 0;
-    float coef_lin = (value_white - value_black)/(max-min); //calcul du coef directeur de la fonction linéaire reliant la couleur à la profondeur
+    int coef_lin = (value_white - value_black)/(max-min); //calcul du coef directeur de la fonction linéaire reliant la couleur à la profondeur
     m_color = abs(m_z*coef_lin - (max*value_white)/(max-min)); //entier
     
 }
@@ -21,30 +21,30 @@ ostream& operator<<(ostream& stream, const Pixel& px)
   //ATTENTION: A CHANGER SI PGM OU PPM
   //PGM
 //   cout << "Méthode PGM" << endl;
-//   stream << px.m_color << " ";
+  stream << px.m_color << " ";
   //PPM
-  cout << "Méthode PPM" << endl;
-  stream << px.m_colorRGB[0] << " ";
-  stream << px.m_colorRGB[1] << " ";
-  stream << px.m_colorRGB[2] << " ";
+//   cout << "Méthode PPM" << endl;
+//   stream << px.m_colorRGB[0] << " ";
+//   stream << px.m_colorRGB[1] << " ";
+//   stream << px.m_colorRGB[2] << " ";
 
 
   return stream;
 }
 
-float Pixel::read_x()
+int Pixel::read_x()
 {
     return m_x;
 }
 
 
-float Pixel::read_y()
+int Pixel::read_y()
 {
     return m_y;
 }
 
 
-float Pixel::read_z()
+double Pixel::read_z()
 {
     return m_z;
 }
@@ -55,17 +55,17 @@ int Pixel::read_color()
     return m_color;
 }
 
-void Pixel::set_x(float x)
+void Pixel::set_x(int x)
 {
     m_x = x;
 }
 
-void Pixel::set_y(float y)
+void Pixel::set_y(int y)
 {
     m_y = y;
 }
 
-void Pixel::set_z(float z)
+void Pixel::set_z(double z)
 {
     m_z = z;
 }
@@ -103,10 +103,10 @@ void Pixel::set_colorRGB(int r, int g, int b)
     }
 }
 
-void Pixel::compute_colorRGB(float premiere_born_supp, float intervalle, float color_palette_coef[10][6])
+void Pixel::compute_colorRGB(double premiere_born_supp, double intervalle, double color_palette_coef[10][6])
 {
     //Dans quel intervalle est le z du pixel:
-    float born_sup = premiere_born_supp;
+    double born_sup = premiere_born_supp;
     int indice_intervalle = 0;
     for (int i = 1; i<11; i ++)
     {

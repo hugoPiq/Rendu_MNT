@@ -37,31 +37,6 @@ void serialize_map_ASCI(const std::string& file_name, Pixel*** picture,const vec
     }
 }
 
-void serialize_map_ASCI_color(const std::string& file_name, Pixel*** picture,const vector<int> size_picture)
-{
-    ofstream f(file_name); //ouverture fichier
-    if(!f.is_open())
-        cout << "Impossible d'ouvrir le fichier en écriture" << endl;
-    else
-    {
-        f << "P3" << endl; //nombre magique ASCI
-        f << size_picture[0] << " " << size_picture[1] << endl; //dimension
-        f << "255" << endl; //valeur blanc
-        
-        //Ecriture de chaque pixel:
-        for (int i = 0; i< size_picture[0] ; i++)
-        {//hauteur
-            for (int j = 0 ; j < size_picture[1]; j++)
-            //longeur
-            {
-                f << *picture[i][j];
-                f << "   ";
-            }
-    }
-        f.close();
-    }
-}
-
 
 void deserialize_map(const std::string& file_name, deque<Point*> &map_points)
 {
@@ -83,10 +58,11 @@ void deserialize_map(const std::string& file_name, deque<Point*> &map_points)
             }         
         }
         f.close();
+        cout << "Fin désérialisation" << endl;
     }
 }
 
-void projection(deque<Point*> &map_points, vector<float> &size_MNT)
+void projection(deque<Point*> &map_points, vector<double> &size_MNT)
 {
     //En plus de projecter, on détermine les dimensions de la MNT
     int size = map_points.size();
@@ -107,13 +83,11 @@ void projection(deque<Point*> &map_points, vector<float> &size_MNT)
     int head_min = map_points[0]->read_y();
     int length_min = map_points[0]->read_x(); //x ou alt
     int length_max = map_points[0]->read_x();
-    float altitude_min = map_points[0]->read_z();
-    float altitude_max = map_points[0]->read_z();
+    double altitude_min = map_points[0]->read_z();
+    double altitude_max = map_points[0]->read_z();
 
     //parcours de toute le deque
     for (int i = 1 ; i < size; i++)
-    // for (deque<Point*>::const_iterator it = map_points.begin(); it != map_points.end(); ++it)
-    // for (auto it=map_points.begin(); it!= map_points.end(); ++it)
     {
         map_points[i]->projection(P, coord_wgs84, coord_lambert93);
         // Déterminer la longeur mini
@@ -157,48 +131,209 @@ void projection(deque<Point*> &map_points, vector<float> &size_MNT)
     size_MNT[2] = altitude_min;
     size_MNT[3] = altitude_max;
     size_MNT[4] = length_min; //pour positionner correctement les pixels par rapport aux points
-    // cout << length_min;
-    size_MNT[5] = head_max; 
+    size_MNT[5] = head_min; 
     //Désalocation
     proj_destroy (P);
     proj_context_destroy (C);
+    cout << "Fin projection" << endl;
 }   
 
 
-void point_to_pixel(deque<Point*> &map_points, Pixel *px, const vector<float> size_MNT)
-{
-    //Sans triangulation
-    //Faire correspondre une altitude d'un point à un pixel se trouvant dans la même zone
-    //idée dichotomie pour réduire temps d'exécution -> pb :pas triée par ordre croissant
-    int size = map_points.size();   
+// void point_to_pixel_v1(deque<Point*> &map_points, Pixel *px, const vector<double> size_MNT)
+// {
+//     //Sans triangulation
+//     //Faire correspondre une altitude d'un point à un pixel se trouvant dans la même zone
+//     int size = map_points.size();   
     
-    //méthode bourrin  A MODIFIER
-    //initialisation
-    int indice_pt = 0; //indice du point le plus proche du pixel
-    //Regarde quel point a la distance la plus proche du pixel
-    float dist_x = px->read_x() - map_points[indice_pt]->read_x();
-    float dist_y = px->read_y() - map_points[indice_pt]->read_y();
-    float dist = sqrt(pow(dist_x,2) + pow(dist_y, 2));
-    for (int i = 1 ; i < size; i++)
+//     //méthode bourrin bcp bcp trop longue  
+//     //initialisation
+//     int indice_pt = 0; //indice du point le plus proche du pixel
+//     //Regarde quel point a la distance la plus proche du pixel
+//     double dist_x = px->read_x() - map_points[indice_pt]->read_x();
+//     double dist_y = px->read_y() - map_points[indice_pt]->read_y();
+//     double dist = sqrt(pow(dist_x,2) + pow(dist_y, 2));
+//     for (int i = 1 ; i < size; i++)
+//     {
+//         double dist_new_x = px->read_x() - map_points[i]->read_x();
+//         double dist_new_y = px->read_y() - map_points[i]->read_y();
+//         double new_dist = sqrt(pow(dist_new_x,2) + pow(dist_new_y, 2));
+//         if( new_dist < dist)
+//         {
+//             dist = new_dist;
+//             indice_pt = i;
+//         }
+//     }
+//     //Associe le point le plus proche du pixel
+//     px->set_z(map_points[indice_pt]->read_z());
+//     px->set_point(map_points[indice_pt]);
+    
+//     //Association de gris
+//     px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+// }
+
+
+// void create_picture(Pixel** picture[], int picture_lenght,const vector<double> size_MNT, deque<Point*> &map_points, vector<int> &size_picture)
+// {
+//     //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
+//     //Détermine la hauteur de l'image
+//     int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
+//     size_picture[0] = picture_lenght;
+//     size_picture[1] = picture_head;
+//     //Calcul pas d'une position d'un pixel à l'autre
+//     double dx = size_MNT[0]/picture_lenght; 
+//     double dy = size_MNT[1]/picture_head; 
+//     // Créations des pixels de notre image
+//     for (int i = 0; i< picture_lenght; i++)
+//     {//hauteur
+//         picture[i] = new Pixel*[picture_head];
+//         for (int j = 0 ; j < picture_head; j++)
+//         //longeur
+//         {
+//             int pos_x = dx*i + size_MNT[4] ; //permet de superposer les pixels au niveaux des points -> permet de calculer des distances cohérentes
+//             int pos_y = dy*j + size_MNT[5];
+//             Pixel *px = new Pixel(pos_x,pos_y); 
+//             // //association de chaque pixel avec un point du MNT avec couleurs
+//             point_to_pixel_v1(map_points,px, size_MNT);
+//             picture[i][j] = px; //colone/ligne attention
+//         }
+//         cout << i << endl;
+//     }
+// }   
+
+
+void quick_sort_x( deque<Point*> &map_points, int low, int high)
+{
+    int i = low;
+    int j = high;
+    int pivot = map_points[(i + j) / 2]->m_x;
+    Point* temp;
+
+    while (i <= j)
     {
-        float dist_new_x = px->read_x() - map_points[i]->read_x();
-        float dist_new_y = px->read_y() - map_points[i]->read_y();
-        float new_dist = sqrt(pow(dist_new_x,2) + pow(dist_new_y, 2));
-        if( new_dist < dist)
+        while (map_points[i]->m_x < pivot)
+            i++;
+        while (map_points[j]->m_x > pivot)
+            j--;
+        if (i <= j)
         {
-            dist = new_dist;
-            indice_pt = i;
+            temp = map_points[i];
+            map_points[i] = map_points[j];
+            map_points[j] = temp;
+            i++;
+            j--;
         }
     }
-    //Associe le point le plus proche du pixel
-    px->set_z(map_points[indice_pt]->read_z());
-    px->set_point(map_points[indice_pt]);
-    
-    //Association de gris
-    px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+    if (j > low)
+        quick_sort_x(map_points, low, j);
+    if (i < high)
+        quick_sort_x(map_points, i, high);
 }
 
-void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, float premiere_borne_sup, float intervalle, float color_palette_coef[10][6])
+
+void create_picture2(Pixel** picture[], int picture_lenght,const vector<double> size_MNT, deque<Point*> &map_points, vector<int> &size_picture)
+{
+    //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
+    //Détermine la hauteur de l'image
+    int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
+    int size_point = map_points.size();
+    size_picture[0] = picture_lenght;
+    size_picture[1] = picture_head;
+    //Calcul pas d'une position d'un pixel à l'autre
+    double dx = size_MNT[0]/picture_lenght; 
+    double dy = size_MNT[1]/picture_head; // = 2 poour 800
+    // Créations des pixels de notre image
+    for (int i = 0; i< picture_lenght; i++)
+    {//hauteur
+        picture[i] = new Pixel*[picture_head];
+        for (int j = 0 ; j < picture_head; j++)
+        //longeur
+        {
+            int pos_x = dx*i + size_MNT[4] ; //permet de superposer les pixels au niveaux des points -> permet de calculer des distances cohérentes
+            int pos_y = dy*j + size_MNT[5];
+            Pixel *px = new Pixel(pos_x,pos_y); 
+            picture[i][j] = px; //colone/ligne attention
+        }
+    }
+
+    //On insert chaque point dans un pixel du tabbleau. 
+    //Un pixel peut avoir plusieurs points.
+    //Certains pixels sont vide ->triangulations
+
+    //Méthode: comme les points sont triés par odre croissant selon les y, 
+    //si le point d'avant ne rentre pas dans un pixel de la colonne correspondant à ce y 
+    //alors il ne peut rentrer que à partir de la conne suivante
+
+    //Trie de map_point selon les y(y par odre croissant)
+    quick_sort_x(map_points, 0, size_point);
+    map_points.pop_front(); // La première valeur est null -> à comprendre
+    cout << "Fin trie" << endl;
+    // Initialisation
+    int size = map_points.size();
+    int dernier_indice = 0;
+    for (int k = 0; k< size; k++)
+    {      
+       //Pour chaque point k:
+       // Peut-il rentrer dans le  pixel à la j eme colonne et à la i eme ligne
+        bool find_pixel = false;
+        for (int j = dernier_indice; j < picture_lenght; j++)
+        {    //colonne j
+            for (int i = 0; i < picture_head; i++)
+            {   //ligne i
+                if (abs(picture[j][i]->read_y() - map_points[k]->read_y()) <= dy)
+                    {
+                        find_pixel = true;
+                        //Ajout du point au pixel correspondant
+                        picture[j][i]->set_z(map_points[k]->read_z());
+                        picture[j][i]->set_point(map_points[k]);
+                        picture[j][i]->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+                        dernier_indice = j;
+                        // cout << "ok";
+                        break;
+                    }
+            }
+            if (find_pixel)
+            {
+                break;
+            }
+       }
+    }
+    cout << "Fin attribution point" << endl;
+    //RESTE A FAIRE triangulation
+} 
+
+
+
+//################################### R G B ##########################################################
+
+
+
+void serialize_map_ASCI_color(const std::string& file_name, Pixel*** picture,const vector<int> size_picture)
+{
+    ofstream f(file_name); //ouverture fichier
+    if(!f.is_open())
+        cout << "Impossible d'ouvrir le fichier en écriture" << endl;
+    else
+    {
+        f << "P3" << endl; //nombre magique ASCI
+        f << size_picture[0] << " " << size_picture[1] << endl; //dimension
+        f << "255" << endl; //valeur blanc
+        
+        //Ecriture de chaque pixel:
+        for (int i = 0; i< size_picture[0] ; i++)
+        {//hauteur
+            for (int j = 0 ; j < size_picture[1]; j++)
+            //longeur
+            {
+                f << *picture[i][j];
+                f << "   ";
+            }
+    }
+        f.close();
+        cout << "Fin sérialisation" << endl;
+    }
+}
+
+void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, double premiere_borne_sup, double intervalle, double color_palette_coef[10][6])
 {
     //Sans triangulation
     //Faire correspondre une altitude d'un point à un pixel se trouvant dans la même zone
@@ -209,14 +344,14 @@ void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, float premiere_bor
     //initialisation
     int indice_pt = 0; //indice du point le plus proche du pixel
     //Regarde quel point a la distance la plus proche du pixel
-    float dist_x = px->read_x() - map_points[indice_pt]->read_x();
-    float dist_y = px->read_y() - map_points[indice_pt]->read_y();
-    float dist = sqrt(pow(dist_x,2) + pow(dist_y, 2));
+    double dist_x = px->read_x() - map_points[indice_pt]->read_x();
+    double dist_y = px->read_y() - map_points[indice_pt]->read_y();
+    double dist = sqrt(pow(dist_x,2) + pow(dist_y, 2));
     for (int i = 1 ; i < size; i++)
     {
-        float dist_new_x = px->read_x() - map_points[i]->read_x();
-        float dist_new_y = px->read_y() - map_points[i]->read_y();
-        float new_dist = sqrt(pow(dist_new_x,2) + pow(dist_new_y, 2));
+        double dist_new_x = px->read_x() - map_points[i]->read_x();
+        double dist_new_y = px->read_y() - map_points[i]->read_y();
+        double new_dist = sqrt(pow(dist_new_x,2) + pow(dist_new_y, 2));
         if( new_dist < dist)
         {
             dist = new_dist;
@@ -232,35 +367,32 @@ void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, float premiere_bor
 }
 
 
-void create_picture1(Pixel** picture[], int picture_lenght,const vector<float> size_MNT, deque<Point*> &map_points, vector<int> &size_picture)
+void picture_PGM(const string file_name, int picture_length)
 {
-    //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
-    //Détermine la hauteur de l'image
-    int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
-    size_picture[0] = picture_lenght;
-    size_picture[1] = picture_head;
-    //Calcul pas d'une position d'un pixel à l'autre
-    float dx = size_MNT[0]/picture_lenght; 
-    float dy = size_MNT[1]/picture_head; 
-    // Créations des pixels de notre image
-    for (int i = 0; i< picture_lenght; i++)
-    {//hauteur
-        picture[i] = new Pixel*[picture_head];
-        for (int j = 0 ; j < picture_head; j++)
-        //longeur
-        {
-            float pos_x = dx*i + size_MNT[4] ; //permet de placer les pixels vers la même positions que les points
-            float pos_y = dy*j + size_MNT[5];
-            Pixel *px = new Pixel(pos_x,pos_y); 
-            // //association de chaque pixel avec un point du MNT avec couleurs
-            point_to_pixel(map_points,px, size_MNT);
-            picture[i][j] = px; //colone/ligne attention
-            cout << i << endl;
-        }
-    }
-}   
+    //lecture points fichier
+    deque<Point*> map_points; //vector vide
+    deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
+    
+    //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
+    vector<double> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
+    projection(map_points, size_MNT);
+    
+    //triangularisation: à faire plus tard
+    //Passage de coordonnées aux pixels d'une image
+    //creation image contenant les pixels et association de chaque pixel à un point
+    Pixel  ***picture;
+    vector<int> size_picture(2); //dimension de l'image, largeur et longeur
+    picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
+    // create_picture(picture, picture_length, size_MNT, map_points, size_picture);
+    create_picture2(picture, picture_length, size_MNT, map_points, size_picture);
 
-void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float> size_MNT, deque<Point*> &map_points, vector<int> &size_picture, const int color_palette[11][3])
+    //Création du fichier PGM
+    serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
+    //Désalocation
+    delete picture;
+}
+
+void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<double> size_MNT, deque<Point*> &map_points, vector<int> &size_picture, const int color_palette[11][3])
 {
     //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
     //Détermine la hauteur de l'image
@@ -268,21 +400,21 @@ void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float
     size_picture[0] = picture_lenght;
     size_picture[1] = picture_head;
     //Calcul pas d'une position d'un pixel à l'autre (pas)
-    float dx = size_MNT[0]/picture_lenght; 
-    float dy = size_MNT[1]/picture_head; 
+    double dx = size_MNT[0]/picture_lenght;  //dimension d'un pixel
+    double dy = size_MNT[1]/picture_head; 
     
     //Calcul des coefficients de couleurs de la palette color 
     //Sépare la palette hoxby en 10 intervalles entre chaque couleur principale.
     //Formation de fonctions linéaire pour les 3 couleurs primaires dans chaqu'un de ces intervalles (transition entre chaque couleurs principales)
-    float  color_palette_coef[10][6];//coef_lin rouge, coef_lin vert, coef_lin bleu et ordonnée à l'origine
+    double  color_palette_coef[10][6];//coef_lin rouge, coef_lin vert, coef_lin bleu et ordonnée à l'origine
     //Séparation des valeurs comprises entre zmin et zmax en 10 parties (11 couleurs principales ) pour associer chaque interval de couleur à un interval de z
-    float diff_z = size_MNT[3] - size_MNT[2];
-    float intervalle = diff_z/10 ;
-    float premiere_borne_sup = size_MNT[2] + diff_z;
+    double diff_z = size_MNT[3] - size_MNT[2];
+    double intervalle = diff_z/10 ;
+    double premiere_borne_sup = size_MNT[2] + diff_z;
     for (int i = 0; i<10; i ++)
     {
-        float born_inf = size_MNT[2] + i*intervalle ;
-        float born_supp = size_MNT[2] + (i + 1)*intervalle;
+        double born_inf = size_MNT[2] + i*intervalle ;
+        double born_supp = size_MNT[2] + (i + 1)*intervalle;
         //Stockage de ces coefficients dans color_palette_coef
         color_palette_coef[i][0] = (color_palette[i+1][0] - color_palette[i][0])/(born_supp-born_inf); //coef_lin rouge
         color_palette_coef[i][1] = (color_palette[i+1][1] - color_palette[i][1])/(born_supp-born_inf); //coef_lin vert
@@ -299,8 +431,8 @@ void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float
         for (int j = 0 ; j < picture_head; j++)
         //longeur
         {
-            float pos_x = dx*i + size_MNT[4] ; //permet de placer les pixels vers la même positions que les points
-            float pos_y = dy*j + size_MNT[5];
+            double pos_x = dx*i + size_MNT[4] ; //permet de placer les pixels vers la même positions que les points
+            double pos_y = dy*j + size_MNT[5];
             Pixel *px = new Pixel(pos_x,pos_y); 
             // //association de chaque pixel avec un point du MNT et association de couleurs
             point_to_pixel_RGB(map_points,px, premiere_borne_sup, intervalle, color_palette_coef);
@@ -310,31 +442,6 @@ void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float
     }
 } 
 
-
-void picture_PGM_v1(const string file_name, int picture_length)
-{
-    //lecture points fichier
-    deque<Point*> map_points; //vector vide
-    deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
-    
-    //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
-    vector<float> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
-    projection(map_points, size_MNT);
-    
-    //triangularisation: à faire plus tard
-    //Passage de coordonnées aux pixels d'une image
-    //creation image contenant les pixels et association de chaque pixel à un point
-    Pixel  ***picture;
-    vector<int> size_picture(2); //dimension de l'image, largeur et longeur
-    picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
-    create_picture1(picture, picture_length, size_MNT, map_points, size_picture);
-    //Création du fichier PGM
-    serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
-    //Désalocation
-    delete picture;
-}
-
-
 void picture_PPM(const string file_name, int picture_length)
 {
     //lecture points fichier
@@ -342,7 +449,7 @@ void picture_PPM(const string file_name, int picture_length)
     deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
     
     //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
-    vector<float> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
+    vector<double> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
     projection(map_points, size_MNT);
     
     //triangularisation: à faire plus tard
@@ -371,7 +478,7 @@ int main()
     int picture_length = 800;
     
     //PGM sans triangulation methode bourrin très long ....
-    // picture_PGM_v1(file_name, picture_length);
+    picture_PGM(file_name, picture_length);
 
     //PPM sans triangulation à tester quand plus rapide
     // picture_PPM(file_name, picture_length);

@@ -9,21 +9,21 @@ using namespace std;
 class Point
 {
     public:
-        Point(float lat, float longi, float alti); //constructeur
+        Point(double lat, double longi, double alti); //constructeur
         ~Point();
-        float read_x();
-        float read_y();
-        float read_z();
+        int read_x();
+        int read_y();
+        double read_z();
         void projection(PJ *P, PJ_COORD coord_wgs84, PJ_COORD coord_lambert93);
         // friend ostream& operator<<(ostream& stream, const Point& r);//utile ?
         friend istream& operator>>(istream& stream, Point& pt); 
     // private:
-    float m_lat;
-    float m_longi;
-    float m_alti;
-    float m_x;
-    float m_y;
-    float m_z;
+    double m_lat;
+    double m_longi;
+    double m_alti;
+    int m_x;
+    int m_y;
+    double m_z;
 
 };
 #endif
