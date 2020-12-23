@@ -6,6 +6,7 @@
 #include <deque>
 #include <vector>
 #include <cmath>
+#include <list>
 #include "pixel.h"
 
 using namespace std;
@@ -168,47 +169,47 @@ void point_to_pixel(deque<Point*> &map_points, Pixel *px, const vector<float> si
     px->set_z(map_points[indice_pt]->read_z());
     px->set_point(map_points[indice_pt]);
     
+    //Association de gris
+    px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+}
+
+void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, const vector<float> size_MNT, float** color_palette_coef)
+{
+    //Sans triangulation
+    //Faire correspondre une altitude d'un point à un pixel se trouvant dans la même zone
+    //idée dichotomie pour réduire temps d'exécution -> pb :pas triée par ordre croissant
+    int size = map_points.size();   
+    
+    //méthode bourrin  A MODIFIER
+    //initialisation
+    int indice_pt = 0; //indice du point le plus proche du pixel
+    //Regarde quel point a la distance la plus proche du pixel
+    float dist_x = px->read_x() - map_points[indice_pt]->read_x();
+    float dist_y = px->read_y() - map_points[indice_pt]->read_y();
+    float dist = sqrt(pow(dist_x,2) + pow(dist_y, 2));
+    for (int i = 1 ; i < size; i++)
+    {
+        float dist_new_x = px->read_x() - map_points[i]->read_x();
+        float dist_new_y = px->read_y() - map_points[i]->read_y();
+        float new_dist = sqrt(pow(dist_new_x,2) + pow(dist_new_y, 2));
+        if( new_dist < dist)
+        {
+            dist = new_dist;
+            indice_pt = i;
+        }
+    }
+    //Associe le point le plus proche du pixel
+    px->set_z(map_points[indice_pt]->read_z());
+    px->set_point(map_points[indice_pt]);
+    
     //Association couleurs
     // px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
     //Création de la color palette
-    int **haxby;
-    haxby = new int*[11]; //11 couleurs différentes
-    for (int i=0; i<11; i++)
-    {
-        haxby[i] = new int[3];
-    }
-    haxby[0][0] = 37;
-    haxby[0][1] = 57;
-    haxby[0][3] = 175;
-
-    haxby[1][0] = 37;
-    haxby[1][1] = 57;
-    haxby[1][3] = 175;
-
-    haxby[2][0] = 37;
-    haxby[2][1] = 57;
-    haxby[2][3] = 175;
-
-    haxby[3][0] = 37;
-    haxby[3][1] = 57;
-    haxby[3][3] = 175;
-
-    haxby[4][0] = 37;
-    haxby[4][1] = 57;
-    haxby[4][3] = 175;
-
-    haxby[5][0] = 37;
-    haxby[5][1] = 57;
-    haxby[5][3] = 175;
-
-
-
-    px->compute_colorRGB(size_MNT[2], size_MNT[3]); //associe la couleur à l'altitude (z)
-
+    px->compute_colorRGB(size_MNT[2], size_MNT[3], color_palette_coef); //associe la couleur à l'altitude (z)
 }
 
 
-void create_picture(Pixel** picture[], int picture_lenght,const vector<float> size_MNT, deque<Point*> &map_points, vector<int> &size_picture)
+void create_picture1(Pixel** picture[], int picture_lenght,const vector<float> size_MNT, deque<Point*> &map_points, vector<int> &size_picture)
 {
     //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
     //Détermine la hauteur de l'image
@@ -219,7 +220,6 @@ void create_picture(Pixel** picture[], int picture_lenght,const vector<float> si
     float dx = size_MNT[0]/picture_lenght; 
     float dy = size_MNT[1]/picture_head; 
     // Créations des pixels de notre image
-    px->compute_color(size_MNT[2], size_MNT[3]); //associe la couleur à l'altitude (z)
     for (int i = 0; i< picture_lenght; i++)
     {//hauteur
         picture[i] = new Pixel*[picture_head];
@@ -236,6 +236,52 @@ void create_picture(Pixel** picture[], int picture_lenght,const vector<float> si
         }
     }
 }   
+
+void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float> size_MNT, deque<Point*> &map_points, vector<int> &size_picture, const int color_palette[11][3])
+{
+    //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
+    //Détermine la hauteur de l'image
+    int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
+    size_picture[0] = picture_lenght;
+    size_picture[1] = picture_head;
+    //Calcul pas d'une position d'un pixel à l'autre
+    float dx = size_MNT[0]/picture_lenght; 
+    float dy = size_MNT[1]/picture_head; 
+    
+    //Calcul des coefficients de couleurs de la palette color
+    //Sépare la palette hoxby en 11 couleurs principales et on forme des intervalles associés. 
+    // Puis on forme des fonctions linéaires pour les 3 couleurs primaires dans chaque intervalle
+    //PROBLEME DE BORN 
+    float  color_palette_coef[10][4];//coef_lin rouge, coef_lin vert, coef_lin bleu et ordonnée à l'origine
+    //Séparation des valeurs comprises entre zmin et zmax en 10 parties (11 couleurs principales )
+    float diff_z = size_MNT[3] - size_MNT[2];
+    float intervalle = diff_z/10 ;
+    for (int i = 0; i<10; i ++)
+    {
+        float born_inf = size_MNT[2] + i*intervalle ;
+        float born_supp = size_MNT[2] + (i + 1)*intervalle;
+        color_palette_coef[i][0] = (40 - 37)/(born_supp-born_inf); //coef_lin rouge
+        color_palette_coef[i][1] = (40 - 37)/(born_supp-born_inf); //coef_lin vert
+        color_palette_coef[i][2] = (40 - 37)/(born_supp-born_inf); //coef_lin bleue
+    }
+    
+    // Créations des pixels de notre image
+    for (int i = 0; i< picture_lenght; i++)
+    {//hauteur
+        picture[i] = new Pixel*[picture_head];
+        for (int j = 0 ; j < picture_head; j++)
+        //longeur
+        {
+            float pos_x = dx*i + size_MNT[4] ; //permet de placer les pixels vers la même positions que les points
+            float pos_y = dy*j + size_MNT[5];
+            Pixel *px = new Pixel(pos_x,pos_y); 
+            // //association de chaque pixel avec un point du MNT avec couleurs
+            point_to_pixel_RGB(map_points,px, size_MNT, color_palette_coef);
+            picture[i][j] = px; //colone/ligne attention
+            cout << i << endl;
+        }
+    }
+} 
 
 
 void picture_PGM_v1(const string file_name, int picture_length)
@@ -254,7 +300,37 @@ void picture_PGM_v1(const string file_name, int picture_length)
     Pixel  ***picture;
     vector<int> size_picture(2); //dimension de l'image, largeur et longeur
     picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
-    create_picture(picture, picture_length, size_MNT, map_points, size_picture);
+   
+    
+    
+    create_picture1(picture, picture_length, size_MNT, map_points, size_picture);
+    //Création du fichier PGM
+    serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
+    //Désalocation
+    delete picture;
+}
+
+
+void picture_PPM_v1(const string file_name, int picture_length)
+{
+    //lecture points fichier
+    deque<Point*> map_points; //vector vide
+    deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
+    
+    //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
+    vector<float> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
+    projection(map_points, size_MNT);
+    
+    //triangularisation: à faire plus tard
+    //Passage de coordonnées aux pixels d'une image
+    //creation image contenant les pixels et association de chaque pixel à un point
+    Pixel  ***picture;
+    vector<int> size_picture(2); //dimension de l'image, largeur et longeur
+    picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
+    
+    //Création de la palette color composée de 11 couleurs fixes
+    const int color_palette[11][3] = {{37,57,175},{40,127,251},{50,190,255},{106,235,255},{138,236,174},{205,255,162},{240,236,121},{255,189,87},{255,161,68},{255,186,133},{255,255,255}}; 
+    create_picture_RGB(picture, picture_length, size_MNT, map_points, size_picture, color_palette);
     //Création du fichier PGM
     serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
     //Désalocation
@@ -271,17 +347,9 @@ int main()
     int picture_length = 800;
     
     //PGM sans triangulation methode bourrin très long ....
-    picture_PGM_v1(file_name, picture_length);
+    // picture_PGM_v1(file_name, picture_length);
+    
 
 
     /* TESTS:*/
-    // deque<Point*> map_points; //vector vide
-    // deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
-    
-    // // cout << map_points.size(); //2681710 elts
-    
-    // //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
-    // vector<float> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
-    // projection(map_points, size_MNT);
-    // return EXIT_SUCCESS;
 }       
