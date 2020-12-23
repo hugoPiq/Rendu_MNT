@@ -24,7 +24,7 @@ class Pixel
     void set_y(float y);
     void set_z(float z);
     void compute_color(float min, float max);
-    void compute_colorRGB(float premiere_born_supp, float intervalle, float color_palette[10][4]);
+    void compute_colorRGB(float premiere_born_supp, float intervalle, float color_palette[10][6]);
     void set_point(Point *pt);
 
     ~Pixel();

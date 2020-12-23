@@ -18,7 +18,17 @@ void Pixel::compute_color(float min, float max)
 }
 ostream& operator<<(ostream& stream, const Pixel& px)
 {
-  stream << px.m_color << " ";
+  //ATTENTION: A CHANGER SI PGM OU PPM
+  //PGM
+//   cout << "Méthode PGM" << endl;
+//   stream << px.m_color << " ";
+  //PPM
+  cout << "Méthode PPM" << endl;
+  stream << px.m_colorRGB[0] << " ";
+  stream << px.m_colorRGB[1] << " ";
+  stream << px.m_colorRGB[2] << " ";
+
+
   return stream;
 }
 
@@ -93,7 +103,7 @@ void Pixel::set_colorRGB(int r, int g, int b)
     }
 }
 
-void Pixel::compute_colorRGB(float premiere_born_supp, float intervalle, float color_palette_coef[10][4])
+void Pixel::compute_colorRGB(float premiere_born_supp, float intervalle, float color_palette_coef[10][6])
 {
     //Dans quel intervalle est le z du pixel:
     float born_sup = premiere_born_supp;
@@ -110,7 +120,7 @@ void Pixel::compute_colorRGB(float premiere_born_supp, float intervalle, float c
     //Selon l'intervalle, 3 fonctions linéaires associées au rouge, vert et bleu
     for (int i = 0; i <3; i++)
     {
-        m_colorRGB[i] = abs(color_palette_coef[indice_intervalle][i]*m_z - color_palette_coef[indice_intervalle][3]) ; //ax + b
+        m_colorRGB[i] = abs(color_palette_coef[indice_intervalle][i]*m_z - color_palette_coef[indice_intervalle][i+3]) ; //ax + b
     }   
     set_colorRGB(m_colorRGB[0],m_colorRGB[1],m_colorRGB[2]);
 }

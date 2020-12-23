@@ -37,6 +37,31 @@ void serialize_map_ASCI(const std::string& file_name, Pixel*** picture,const vec
     }
 }
 
+void serialize_map_ASCI_color(const std::string& file_name, Pixel*** picture,const vector<int> size_picture)
+{
+    ofstream f(file_name); //ouverture fichier
+    if(!f.is_open())
+        cout << "Impossible d'ouvrir le fichier en écriture" << endl;
+    else
+    {
+        f << "P3" << endl; //nombre magique ASCI
+        f << size_picture[0] << " " << size_picture[1] << endl; //dimension
+        f << "255" << endl; //valeur blanc
+        
+        //Ecriture de chaque pixel:
+        for (int i = 0; i< size_picture[0] ; i++)
+        {//hauteur
+            for (int j = 0 ; j < size_picture[1]; j++)
+            //longeur
+            {
+                f << *picture[i][j];
+                f << "   ";
+            }
+    }
+        f.close();
+    }
+}
+
 
 void deserialize_map(const std::string& file_name, deque<Point*> &map_points)
 {
@@ -173,7 +198,7 @@ void point_to_pixel(deque<Point*> &map_points, Pixel *px, const vector<float> si
     px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
 }
 
-void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, const vector<float> size_MNT, float** color_palette_coef)
+void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, float premiere_borne_sup, float intervalle, float color_palette_coef[10][6])
 {
     //Sans triangulation
     //Faire correspondre une altitude d'un point à un pixel se trouvant dans la même zone
@@ -201,11 +226,9 @@ void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, const vector<float
     //Associe le point le plus proche du pixel
     px->set_z(map_points[indice_pt]->read_z());
     px->set_point(map_points[indice_pt]);
-    
     //Association couleurs
-    // px->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
     //Création de la color palette
-    px->compute_colorRGB(size_MNT[2], size_MNT[3], color_palette_coef); //associe la couleur à l'altitude (z)
+    px->compute_colorRGB(premiere_borne_sup, intervalle, color_palette_coef); //associe la couleur à l'altitude (z)
 }
 
 
@@ -244,25 +267,29 @@ void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float
     int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
     size_picture[0] = picture_lenght;
     size_picture[1] = picture_head;
-    //Calcul pas d'une position d'un pixel à l'autre
+    //Calcul pas d'une position d'un pixel à l'autre (pas)
     float dx = size_MNT[0]/picture_lenght; 
     float dy = size_MNT[1]/picture_head; 
     
-    //Calcul des coefficients de couleurs de la palette color
-    //Sépare la palette hoxby en 11 couleurs principales et on forme des intervalles associés. 
-    // Puis on forme des fonctions linéaires pour les 3 couleurs primaires dans chaque intervalle
-    //PROBLEME DE BORN 
-    float  color_palette_coef[10][4];//coef_lin rouge, coef_lin vert, coef_lin bleu et ordonnée à l'origine
-    //Séparation des valeurs comprises entre zmin et zmax en 10 parties (11 couleurs principales )
+    //Calcul des coefficients de couleurs de la palette color 
+    //Sépare la palette hoxby en 10 intervalles entre chaque couleur principale.
+    //Formation de fonctions linéaire pour les 3 couleurs primaires dans chaqu'un de ces intervalles (transition entre chaque couleurs principales)
+    float  color_palette_coef[10][6];//coef_lin rouge, coef_lin vert, coef_lin bleu et ordonnée à l'origine
+    //Séparation des valeurs comprises entre zmin et zmax en 10 parties (11 couleurs principales ) pour associer chaque interval de couleur à un interval de z
     float diff_z = size_MNT[3] - size_MNT[2];
     float intervalle = diff_z/10 ;
+    float premiere_borne_sup = size_MNT[2] + diff_z;
     for (int i = 0; i<10; i ++)
     {
         float born_inf = size_MNT[2] + i*intervalle ;
         float born_supp = size_MNT[2] + (i + 1)*intervalle;
-        color_palette_coef[i][0] = (40 - 37)/(born_supp-born_inf); //coef_lin rouge
-        color_palette_coef[i][1] = (40 - 37)/(born_supp-born_inf); //coef_lin vert
-        color_palette_coef[i][2] = (40 - 37)/(born_supp-born_inf); //coef_lin bleue
+        //Stockage de ces coefficients dans color_palette_coef
+        color_palette_coef[i][0] = (color_palette[i+1][0] - color_palette[i][0])/(born_supp-born_inf); //coef_lin rouge
+        color_palette_coef[i][1] = (color_palette[i+1][1] - color_palette[i][1])/(born_supp-born_inf); //coef_lin vert
+        color_palette_coef[i][2] = (color_palette[i+1][2] - color_palette[i][2])/(born_supp-born_inf); //coef_lin bleue
+        color_palette_coef[i][3] = (born_supp*color_palette[i+1][0])/(born_supp-born_inf); //ordonnée à l'origine rouge 
+        color_palette_coef[i][4] = (born_supp*color_palette[i+1][1])/(born_supp-born_inf);//ordonnée à l'origine vert
+        color_palette_coef[i][5] = (born_supp*color_palette[i+1][2])/(born_supp-born_inf);//ordonnée à l'origine bleu
     }
     
     // Créations des pixels de notre image
@@ -275,8 +302,8 @@ void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<float
             float pos_x = dx*i + size_MNT[4] ; //permet de placer les pixels vers la même positions que les points
             float pos_y = dy*j + size_MNT[5];
             Pixel *px = new Pixel(pos_x,pos_y); 
-            // //association de chaque pixel avec un point du MNT avec couleurs
-            point_to_pixel_RGB(map_points,px, size_MNT, color_palette_coef);
+            // //association de chaque pixel avec un point du MNT et association de couleurs
+            point_to_pixel_RGB(map_points,px, premiere_borne_sup, intervalle, color_palette_coef);
             picture[i][j] = px; //colone/ligne attention
             cout << i << endl;
         }
@@ -300,9 +327,6 @@ void picture_PGM_v1(const string file_name, int picture_length)
     Pixel  ***picture;
     vector<int> size_picture(2); //dimension de l'image, largeur et longeur
     picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
-   
-    
-    
     create_picture1(picture, picture_length, size_MNT, map_points, size_picture);
     //Création du fichier PGM
     serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
@@ -311,7 +335,7 @@ void picture_PGM_v1(const string file_name, int picture_length)
 }
 
 
-void picture_PPM_v1(const string file_name, int picture_length)
+void picture_PPM(const string file_name, int picture_length)
 {
     //lecture points fichier
     deque<Point*> map_points; //vector vide
@@ -328,11 +352,11 @@ void picture_PPM_v1(const string file_name, int picture_length)
     vector<int> size_picture(2); //dimension de l'image, largeur et longeur
     picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
     
-    //Création de la palette color composée de 11 couleurs fixes
+    //Création de la palette color composée de 11 couleurs fixes en RGB
     const int color_palette[11][3] = {{37,57,175},{40,127,251},{50,190,255},{106,235,255},{138,236,174},{205,255,162},{240,236,121},{255,189,87},{255,161,68},{255,186,133},{255,255,255}}; 
     create_picture_RGB(picture, picture_length, size_MNT, map_points, size_picture, color_palette);
     //Création du fichier PGM
-    serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
+    serialize_map_ASCI_color("test_PGM.pgm", picture, size_picture);
     //Désalocation
     delete picture;
 }
@@ -348,6 +372,10 @@ int main()
     
     //PGM sans triangulation methode bourrin très long ....
     // picture_PGM_v1(file_name, picture_length);
+
+    //PPM sans triangulation à tester quand plus rapide
+    // picture_PPM(file_name, picture_length);
+    
     
 
 
