@@ -18,11 +18,12 @@ class Pixel
     int read_y();
     double read_z();
     int read_color();
+    int read_nb_point();
     void set_colorRGB(int r, int g, int b);
     //mutateur
     void set_x(int x);
     void set_y(int y);
-    void set_z(double z);
+    void set_z();
     void compute_color(double min, double max);
     void compute_colorRGB(double premiere_born_supp, double intervalle, double color_palette[10][6]);
     void set_point(Point *pt);
@@ -32,9 +33,10 @@ class Pixel
     // private:
     int m_x;
     int m_y;
+    int m_nb_point;
     double m_z; 
     int m_color;
     int m_colorRGB[3] = {0,0,0};
-    Point *m_point = NULL;
+    Point **m_point = NULL;
 };
 #endif

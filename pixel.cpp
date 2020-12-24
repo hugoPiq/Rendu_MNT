@@ -2,6 +2,7 @@
 #include <iostream>
 Pixel::Pixel(int x, int y): m_x(x),m_y(y)
 {   
+    m_nb_point = 0;
 }
 
 Pixel::Pixel()
@@ -10,11 +11,17 @@ Pixel::Pixel()
 
 void Pixel::compute_color(double min, double max)
 {
-    int value_white = 15; //valeur arbitraire de blanc 
-    int value_black = 0;
-    int coef_lin = (value_white - value_black)/(max-min); //calcul du coef directeur de la fonction linéaire reliant la couleur à la profondeur
-    m_color = abs(m_z*coef_lin - (max*value_white)/(max-min)); //entier
-    
+    if (m_nb_point == 0)
+    {
+        m_color = 0;
+    }
+    else
+    {
+        int value_white = 15; //valeur arbitraire de blanc 
+        int value_black = 0;
+        double coef_lin = (value_white - value_black)/(max-min); //calcul du coef directeur de la fonction linéaire reliant la couleur à la profondeur
+        m_color = abs(m_z*coef_lin - (max*value_white)/(max-min)); //entier
+    }
 }
 ostream& operator<<(ostream& stream, const Pixel& px)
 {
@@ -65,14 +72,36 @@ void Pixel::set_y(int y)
     m_y = y;
 }
 
-void Pixel::set_z(double z)
+int Pixel::read_nb_point()
 {
-    m_z = z;
+    return m_nb_point;
+}
+
+void Pixel::set_z()
+{
+    // Attribution du z:
+    // Si un ou plusieurs points: moyenne des altitudes de ces points  
+    double moyenne = 0.; 
+    for ( int i=0 ; i < m_nb_point; i++)
+    {
+        moyenne += m_point[i]->read_z();
+    }
+    moyenne = moyenne/m_nb_point;
+    m_z = moyenne;
 }
 
 void Pixel::set_point(Point *pt)
 {
-    m_point = pt;
+    //Ajout du point à la liste de point du pixel
+    m_nb_point ++;
+    Point** inter = new Point*[m_nb_point];
+    for ( int i=0 ; i < m_nb_point-1; i++)
+    {
+        inter[i] = m_point[i];
+    }
+    inter[m_nb_point-1] = pt;
+    delete[] m_point;
+    m_point = inter;
 }
 
 void Pixel::set_colorRGB(int r, int g, int b)

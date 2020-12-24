@@ -23,7 +23,7 @@ int Point::read_x()
   return m_x;
 }
 
- int Point::read_y()
+int Point::read_y()
 {
   return m_y;
 }

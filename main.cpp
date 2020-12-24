@@ -34,6 +34,7 @@ void serialize_map_ASCI(const std::string& file_name, Pixel*** picture,const vec
             }
     }
         f.close();
+        cout << "Fin sérialisation" << endl;
     }
 }
 
@@ -283,11 +284,9 @@ void create_picture2(Pixel** picture[], int picture_lenght,const vector<double> 
                     {
                         find_pixel = true;
                         //Ajout du point au pixel correspondant
-                        picture[j][i]->set_z(map_points[k]->read_z());
-                        picture[j][i]->set_point(map_points[k]);
-                        picture[j][i]->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+                        picture[j][i]->set_point(map_points[k]); 
+
                         dernier_indice = j;
-                        // cout << "ok";
                         break;
                     }
             }
@@ -297,10 +296,63 @@ void create_picture2(Pixel** picture[], int picture_lenght,const vector<double> 
             }
        }
     }
-    cout << "Fin attribution point" << endl;
-    //RESTE A FAIRE triangulation
-} 
+    cout << "Fin attribution point" << endl;    
+    // Attribution des des altitudes aux pixels et point le plus proche pour les pixels sans point
+    for (int j = 0; j < picture_lenght; j++)
+        {    //colonne j
+            for (int i = 0; i < picture_head; i++)
+            {   //ligne i
+                if (picture[j][i]->read_nb_point()!=0)
+                {
+                    picture[j][i]->set_z();
+                }
+                else
+                {
+                    //Trouve le point le plus proche dans les pixels alentours
+                    //Pixels alentours rayon 1
+                    //Penser aux cas critiques -> break
+                    int indice_px_autour[8][2] = { {1,0}, {1,1}, {0,1}, {-1,1}, {-1,0}, {-1,-1}, {0,-1} };
+                    for (int i=0; i <8;i++)
+                    {
+                        int indice_px_x = indice_px_autour[i][0];
+                        int indice_px_y = indice_px_autour[i][1];
+                        //Enlever les cas critiques (sur le coté, bas ou haut)
+                        if ((indice_px_x < picture_lenght || indice_px_x >= 0) || (indice_px_y < picture_head || indice_px_y >= 0))
+                        {
+                            
+                        }
 
+                    }
+
+                }
+                picture[j][i]->compute_color(size_MNT[2], size_MNT[3]); //associe un gris à l'altitude (z)
+            }
+        } 
+    cout << "Fin attribution colors" << endl;
+}        
+
+void picture_PGM(const string file_name, int picture_length)
+{
+    //lecture  des points du fichier
+    deque<Point*> map_points; //vector vide
+    deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
+    
+    //Projecetion coordonates WGS84 en Lambert 93 et détermination taille du MNT
+    vector<double> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
+    projection(map_points, size_MNT);
+    
+    //Passage de coordonnées aux pixels d'une image
+    //Creation image contenant les pixels et association de chaque pixel à un point
+    Pixel  ***picture;
+    vector<int> size_picture(2); //dimension de l'image, largeur et longeur
+    picture = new Pixel**[picture_length]; //tableau contenant les  pixels
+    // create_picture(picture, picture_length, size_MNT, map_points, size_picture);
+    create_picture2(picture, picture_length, size_MNT, map_points, size_picture);
+    //Création du fichier PGM
+    serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
+    //Désalocation
+    delete[] picture;
+}
 
 
 //################################### R G B ##########################################################
@@ -359,7 +411,7 @@ void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, double premiere_bo
         }
     }
     //Associe le point le plus proche du pixel
-    px->set_z(map_points[indice_pt]->read_z());
+    // px->set_z(map_points[indice_pt]->read_z());
     px->set_point(map_points[indice_pt]);
     //Association couleurs
     //Création de la color palette
@@ -367,30 +419,7 @@ void point_to_pixel_RGB(deque<Point*> &map_points, Pixel *px, double premiere_bo
 }
 
 
-void picture_PGM(const string file_name, int picture_length)
-{
-    //lecture points fichier
-    deque<Point*> map_points; //vector vide
-    deserialize_map(file_name,map_points); //insertion de tous les points du fichier dans le vector
-    
-    //Projecetion coordonates WGS84 to Lambert 93 et détermination taille du MNT
-    vector<double> size_MNT(6); // vector contenant la longeur, la largeur, la hauteur max, la hauteur min du MNT et la postion du points en haut à gauche
-    projection(map_points, size_MNT);
-    
-    //triangularisation: à faire plus tard
-    //Passage de coordonnées aux pixels d'une image
-    //creation image contenant les pixels et association de chaque pixel à un point
-    Pixel  ***picture;
-    vector<int> size_picture(2); //dimension de l'image, largeur et longeur
-    picture = new Pixel**[picture_length]; //tableau de pointeurs de pointeurs sur des pixels
-    // create_picture(picture, picture_length, size_MNT, map_points, size_picture);
-    create_picture2(picture, picture_length, size_MNT, map_points, size_picture);
 
-    //Création du fichier PGM
-    serialize_map_ASCI("test_PGM.pgm", picture, size_picture);
-    //Désalocation
-    delete picture;
-}
 
 void create_picture_RGB(Pixel** picture[], int picture_lenght,const vector<double> size_MNT, deque<Point*> &map_points, vector<int> &size_picture, const int color_palette[11][3])
 {
@@ -477,7 +506,7 @@ int main()
     const string file_name = "Guerledan_Feb19_50cm_wgs84.txt";
     int picture_length = 800;
     
-    //PGM sans triangulation methode bourrin très long ....
+    //PGM 
     picture_PGM(file_name, picture_length);
 
     //PPM sans triangulation à tester quand plus rapide
