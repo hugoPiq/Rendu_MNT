@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <proj.h>
+#include <vector>
 using namespace std;
 
 class Point
@@ -15,6 +16,7 @@ class Point
         int read_y();
         double read_z();
         void projection(PJ *P, PJ_COORD coord_wgs84, PJ_COORD coord_lambert93);
+        void normalisation(const vector<double> size_MNT, vector<int> &size_picture);
         // friend ostream& operator<<(ostream& stream, const Point& r);//utile ?
         friend istream& operator>>(istream& stream, Point& pt); 
     // private:

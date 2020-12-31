@@ -11,19 +11,14 @@ using namespace std;
 class Pixel
 {
     public:
-    Pixel(int x, int y); //constructeur
-    Pixel();
+    Pixel(); //constructeur
     //accesseur
-    int read_x();
-    int read_y();
     double read_z();
     int read_color();
     int read_nb_point();
     void set_colorRGB(int r, int g, int b);
     //mutateur
-    void set_x(int x);
-    void set_y(int y);
-    void set_z();
+    void set_z(double value);
     void compute_color(double min, double max);
     void compute_colorRGB(double premiere_born_supp, double intervalle, double color_palette[10][6]);
     void set_point(Point *pt);
@@ -31,8 +26,6 @@ class Pixel
     ~Pixel();
     friend ostream& operator<<(ostream& stream, const Pixel& px); //serialiser
     // private:
-    int m_x;
-    int m_y;
     int m_nb_point;
     double m_z; 
     int m_color;
