@@ -21,8 +21,10 @@ void Point::projection(PJ *P, PJ_COORD coord_wgs84, PJ_COORD coord_lambert93)
 
 void Point::normalisation(const vector<double> size_MNT, vector<int> &size_picture)
 {
-  m_x = (m_x -size_MNT[4])*size_picture[0]/size_MNT[0];
-  m_y = (m_y -size_MNT[5])*size_picture[1]/size_MNT[1];
+  // m_x = (m_x -size_MNT[4])*size_picture[0]/size_MNT[0];
+  // m_y = (m_y -size_MNT[5])*size_picture[1]/size_MNT[1];
+  m_x = (m_x -size_MNT[4]); 
+  m_y = (m_y -size_MNT[5]);
 }
 
 int Point::read_x()

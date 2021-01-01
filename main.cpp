@@ -173,7 +173,9 @@ void create_picture_test(Pixel** picture[], int picture_lenght,const vector<doub
 {
     //Pour la résolution, picture_head = nb de pixel sur la hauteur et  picture_lenght = nb pixel sur la longeur
     //Détermine la hauteur de l'image
-    int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
+    int picture_head = 1608;
+    // int picture_head = size_MNT[1]*picture_lenght/size_MNT[0];
+
     size_picture[0] = picture_lenght;
     size_picture[1] = picture_head;
     // Créations des pixels de notre image
@@ -195,15 +197,18 @@ void create_picture_test(Pixel** picture[], int picture_lenght,const vector<doub
         
         int indice_ligne = map_points[k]->read_y();
         int indice_colonne = map_points[k]->read_x();
+        // cout << indice_ligne << endl;
         // cout << indice_colonne << endl;
-        if (indice_colonne >= picture_lenght) //Correspond aux valeurs limites du quadrillage
-        {
-            indice_colonne -= 1;
-        }
-        if (indice_ligne >= picture_head) //Correspond aux valeurs limites du quadrillage
-        {
-            indice_ligne -= 1;
-        }
+        // cout << indice_colonne << endl;
+        // if (indice_colonne >= picture_lenght) //Correspond aux valeurs limites du quadrillage
+        // {
+        //     // indice_colonne -= 1;
+        //     // cout << indice_colonne << endl;
+        // }
+        // if (indice_ligne >= picture_head) //Correspond aux valeurs limites du quadrillage
+        // {
+        //     indice_ligne -= 1;
+        // }
         picture[indice_colonne][indice_ligne]->set_z(map_points[k]->read_z());
         picture[indice_colonne][indice_ligne]->m_nb_point = 1;
     }
@@ -480,7 +485,7 @@ int main()
     //varibles à mettre en paramètres:
     // const string file_name = "test.txt";
     const string file_name = "Guerledan_Feb19_50cm_wgs84.txt";
-    int picture_length = 1608;
+    int picture_length = 1707;
     
     //PGM 
     picture_PGM(file_name, picture_length);
