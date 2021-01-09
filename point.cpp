@@ -26,16 +26,16 @@ void Point::normalisation(const vector<double> size_MNT,const int picture_lenght
   }
 }
 
-float Point::read_x()
+float Point::read_x() const
 {
   return m_x;
 }
 
-float Point::read_y()
+float Point::read_y() const
 {
   return m_y;
 }
-float Point::read_z()
+float Point::read_z() const
 {
   return m_z;
 }
@@ -66,17 +66,17 @@ void Point::set_color_RGB()
 }
 
 
-int Point::read_b()
+int Point::read_b() const
 {
   return m_b;
 }
 
-int Point::read_r()
+int Point::read_r() const
 {
   return m_r;
 }
 
-int Point::read_g()
+int Point::read_g() const
 {
   return m_g;
 }
