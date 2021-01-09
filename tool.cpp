@@ -2,11 +2,11 @@
 
 void deserialize_map(const std::string& file_name, deque<Point*> &map_points, vector<double> &size_MNT)
 {
-    ifstream f(file_name); //ouverture fichier
+    ifstream f(file_name);
     bool debut = true;
     float xmin, xmax, ymin, ymax, alt_min, alt_max;
     
-    //Initialisation projection
+    //Projection initialization
     PJ_CONTEXT *C = PJ_DEFAULT_CTX;
     PJ *P = proj_create_crs_to_crs (C,"EPSG:4326","EPSG:2154",NULL); ;
     PJ* P_for_GIS = proj_normalize_for_visualization(C, P);
@@ -14,18 +14,21 @@ void deserialize_map(const std::string& file_name, deque<Point*> &map_points, ve
     P = P_for_GIS;  
     PJ_COORD coord_wgs84, coord_lambert93;
     
+    //Open file
     if(!f.is_open())
         cout << "Impossible d'ouvrir le fichier en lecture" << endl;
     else
     {
-        while(!f.eof()) //eof end of the file
+        while(!f.eof()) 
         {
             Point *pt = new Point();
-            f >> *pt; //serialisation
+            
+            //Serialisation
+            f >> *pt; 
+            //Projection
             pt->projection(P, coord_wgs84, coord_lambert93);
             if (debut)
             {
-                
                 xmin = pt->read_x();
                 xmax = pt->read_x();
                 ymin = pt->read_y();
@@ -36,6 +39,7 @@ void deserialize_map(const std::string& file_name, deque<Point*> &map_points, ve
             }
             else
             {
+                //Find extremums
                 if (pt->read_z() < alt_min)
                 {   
                     alt_min = pt->read_z();
@@ -73,29 +77,29 @@ void deserialize_map(const std::string& file_name, deque<Point*> &map_points, ve
     size_MNT[3] = xmax; 
     size_MNT[4] = ymin; 
     size_MNT[5] = ymax; 
-    //Désalocation
+    //Dealocation
     proj_destroy (P);
     proj_context_destroy (C);
-    cout << "Fin projection" << endl;
+    cout << "End projection" << endl;
 }
 
 
 void serialize_map_gray(int picture_lenght, int picture_head,Point*** picture)
 {
-    ofstream f("test_PGM.pgm"); //ouverture fichier
+    //Open file
+    ofstream f("Projection_MNT_gray_ASCII.pgm"); 
     if(!f.is_open())
         cout << "Impossible d'ouvrir le fichier en écriture" << endl;
     else
     {
-        f << "P2" << endl; //nombre magique ASCI
+        f << "P2" << endl; //Magic number
         f << picture_lenght << " " << picture_head << endl; //dimension
-        f << "255" << endl; //valeur blanc
+        f << "255" << endl; //White value
         
-        //Ecriture de chaque pixel:
+        //Writting of each point
         for (int i = picture_head-1; i>-1  ; i--)
-        {//hauteur
+        {
             for (int j = 0 ; j < picture_lenght; j++)
-            //longeur
             {
                 f << picture[i][j]->set_color_Gray() << " ";
             }
@@ -108,16 +112,16 @@ void serialize_map_gray(int picture_lenght, int picture_head,Point*** picture)
 
 void serialize_map_binaire(int picture_lenght, int picture_head,Point*** picture)
 {
-    ofstream f("Projection_MNT_color_bin.ppm"); //ouverture fichier
+    ofstream f("Projection_MNT_color_bin.ppm");
     if(!f.is_open())
         cout << "Impossible d'ouvrir le fichier en écriture" << endl;
     else
     {
-        f << "P6" << endl; //nombre magique binaire
+        f << "P6" << endl; //Magic number
         f << picture_lenght << " " << picture_head << endl; //dimension
-        f << "255" << endl; //valeur blanc
+        f << "255" << endl; //White value
         
-        //Ecriture de chaque pixel:
+        //Writting of each point
         for (int i = picture_head-1; i>-1  ; i--)
         {
             for (int j = 0 ; j < picture_lenght; j++)
@@ -136,16 +140,14 @@ void serialize_map_binaire(int picture_lenght, int picture_head,Point*** picture
 
 void serialize_map_ASCII(int picture_lenght, int picture_head,Point*** picture)
 {
-    ofstream f("test_ASCII.ppm"); //ouverture fichier
+    ofstream f("Projection_MNT_color_ASCII.ppm"); 
     if(!f.is_open())
         cout << "Impossible d'ouvrir le fichier en écriture" << endl;
     else
     {
-        f << "P3" << endl; //nombre magique binaire
-        f << picture_lenght << " " << picture_head << endl; //dimension
-        f << "255" << endl; //valeur blanc
-        
-        //Ecriture de chaque pixel:
+        f << "P3" << endl; 
+        f << picture_lenght << " " << picture_head << endl;
+        f << "255" << endl;
         for (int i = picture_head-1; i>-1  ; i--)
         {
             for (int j = 0 ; j < picture_lenght; j++)
@@ -163,20 +165,23 @@ void serialize_map_ASCII(int picture_lenght, int picture_head,Point*** picture)
 
 void create_picture(int picture_lenght,const vector<double> size_MNT, deque<Point*> &map_points)
 {
+    //Compute head of the picture
     int picture_head = (int)(abs(size_MNT[3] - size_MNT[2]) * picture_lenght / abs(size_MNT[5] - size_MNT[4]));
+    //Tab containing each point (pixel) of the picture
     Point ***picture= new Point**[picture_head];
     for (int i = 0; i< picture_head; i++)
     {
         picture[i] = new Point*[picture_lenght];
         for (int j = 0 ; j < picture_lenght; j++) 
         {
+            //Each box contains at the beginning a pixel of zero altitude
             Point *pt = new Point();
-            picture[i][j] = pt; //initialisation des pixels en noir
+            picture[i][j] = pt;
         }
     }
-    
+    //Association of each point of theMNT to the boxes of the table
     int size = map_points.size();
-    for (int k = 0; k< size; k++) //Pour chaque point k
+    for (int k = 0; k< size; k++)
     {      
         map_points[k]->normalisation(size_MNT, picture_lenght, picture_head); 
         int i = map_points[k]->read_y();
@@ -185,10 +190,10 @@ void create_picture(int picture_lenght,const vector<double> size_MNT, deque<Poin
         // picture[i][j]->set_color_Gray();
         picture[i][j]->set_color_RGB();
     }
-    cout << "Fin attribution point" << endl;
+    cout << "End of point allocation" << endl;
     // serialize_map_gray(picture_lenght,picture_head, picture);
     serialize_map_binaire(picture_lenght,picture_head, picture);
     // serialize_map_ASCII(picture_lenght,picture_head, picture);
-    cout << "Fin sérialisation" << endl;
-    cout << "Fichier: Projection_MNT_color_bin.ppm créé ! " << endl;
+    cout << "End of serialization" << endl;
+    cout << "File created: Projection_MNT_color_bin.ppm" << endl;
 }        

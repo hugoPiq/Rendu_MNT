@@ -1,0 +1,109 @@
+\hypertarget{classPoint}{}\section{Point Class Reference}
+\label{classPoint}\index{Point@{Point}}
+
+
+A point of the M\+NT.  
+
+
+
+
+{\ttfamily \#include $<$point.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPoint_ad92f2337b839a94ce97dcdb439b4325a}\label{classPoint_ad92f2337b839a94ce97dcdb439b4325a}} 
+\hyperlink{classPoint_ad92f2337b839a94ce97dcdb439b4325a}{Point} ()
+\begin{DoxyCompactList}\small\item\em Create a point. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_a497feb03e729bdcbf26f3ae1a74221c1}\label{classPoint_a497feb03e729bdcbf26f3ae1a74221c1}} 
+float \hyperlink{classPoint_a497feb03e729bdcbf26f3ae1a74221c1}{read\+\_\+x} () const
+\begin{DoxyCompactList}\small\item\em Read the x value of the \hyperlink{classPoint}{Point}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_a2bc96b86a6b4ea85d6160d0edf5a9060}\label{classPoint_a2bc96b86a6b4ea85d6160d0edf5a9060}} 
+float \hyperlink{classPoint_a2bc96b86a6b4ea85d6160d0edf5a9060}{read\+\_\+y} () const
+\begin{DoxyCompactList}\small\item\em Read the x value of the \hyperlink{classPoint}{Point}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_a67d9f7f9eee8a73b0d66149b85535fad}\label{classPoint_a67d9f7f9eee8a73b0d66149b85535fad}} 
+float \hyperlink{classPoint_a67d9f7f9eee8a73b0d66149b85535fad}{read\+\_\+z} () const
+\begin{DoxyCompactList}\small\item\em Read the x value of the \hyperlink{classPoint}{Point}. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_abfbc9926badce23e1430415b4771bdce}\label{classPoint_abfbc9926badce23e1430415b4771bdce}} 
+int \hyperlink{classPoint_abfbc9926badce23e1430415b4771bdce}{set\+\_\+color\+\_\+\+Gray} ()
+\begin{DoxyCompactList}\small\item\em Compute the gray intensity of the point. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_a234c768ae41469b0dc500416e3e6312c}\label{classPoint_a234c768ae41469b0dc500416e3e6312c}} 
+void \hyperlink{classPoint_a234c768ae41469b0dc500416e3e6312c}{set\+\_\+color\+\_\+\+R\+GB} ()
+\begin{DoxyCompactList}\small\item\em Compute the R\+GB color of the point. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_afe57b9b50ee0490dd522797e2965ed06}\label{classPoint_afe57b9b50ee0490dd522797e2965ed06}} 
+int \hyperlink{classPoint_afe57b9b50ee0490dd522797e2965ed06}{read\+\_\+r} () const
+\begin{DoxyCompactList}\small\item\em Read the red value of the point. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_a9c7d72820c2cc8592ebb1a3acdef4806}\label{classPoint_a9c7d72820c2cc8592ebb1a3acdef4806}} 
+int \hyperlink{classPoint_a9c7d72820c2cc8592ebb1a3acdef4806}{read\+\_\+b} () const
+\begin{DoxyCompactList}\small\item\em Read the blue value of the point. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint_a003218e4b5a6b409623358c90de8caa7}\label{classPoint_a003218e4b5a6b409623358c90de8caa7}} 
+int \hyperlink{classPoint_a003218e4b5a6b409623358c90de8caa7}{read\+\_\+g} () const
+\begin{DoxyCompactList}\small\item\em Read the green value of the point. \end{DoxyCompactList}\item 
+void \hyperlink{classPoint_ab1e76e2e6a3e4b70e9909620806a1ace}{projection} (PJ $\ast$P, P\+J\+\_\+\+C\+O\+O\+RD coord\+\_\+wgs84, P\+J\+\_\+\+C\+O\+O\+RD coord\+\_\+lambert93)
+\begin{DoxyCompactList}\small\item\em Project W\+G\+S84 coordonate\textquotesingle{}s point to lambert 93. \end{DoxyCompactList}\item 
+void \hyperlink{classPoint_a8726641b70376c3700b0b23f0bfff0ae}{normalisation} (const vector$<$ double $>$ size\+\_\+\+M\+NT, const int picture\+\_\+lenght, const int picture\+\_\+head)
+\begin{DoxyCompactList}\small\item\em Normalise the x, y, z values in function of max and min values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPoint_a663f66d3a58c8e4308db9d642cbdf47f}\label{classPoint_a663f66d3a58c8e4308db9d642cbdf47f}} 
+istream \& \hyperlink{classPoint_a663f66d3a58c8e4308db9d642cbdf47f}{operator$>$$>$} (istream \&stream, \hyperlink{classPoint}{Point} \&pt)
+\begin{DoxyCompactList}\small\item\em Overloading of $>$$>$ \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+A point of the M\+NT. 
+
+\begin{DoxyAuthor}{Author}
+Hugo Piquard 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2020 
+\end{DoxyDate}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classPoint_a8726641b70376c3700b0b23f0bfff0ae}\label{classPoint_a8726641b70376c3700b0b23f0bfff0ae}} 
+\index{Point@{Point}!normalisation@{normalisation}}
+\index{normalisation@{normalisation}!Point@{Point}}
+\subsubsection{\texorpdfstring{normalisation()}{normalisation()}}
+{\footnotesize\ttfamily void Point\+::normalisation (\begin{DoxyParamCaption}\item[{const vector$<$ double $>$}]{size\+\_\+\+M\+NT,  }\item[{const int}]{picture\+\_\+lenght,  }\item[{const int}]{picture\+\_\+head }\end{DoxyParamCaption})}
+
+
+
+Normalise the x, y, z values in function of max and min values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em size\+\_\+\+M\+NT} & Vector with x size, y size and z size, const vector$<$double$>$ \\
+\hline
+{\em picture\+\_\+lenght} & Lenght of the picture, const int \\
+\hline
+{\em picture\+\_\+head} & Head of the picture const int \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPoint_ab1e76e2e6a3e4b70e9909620806a1ace}\label{classPoint_ab1e76e2e6a3e4b70e9909620806a1ace}} 
+\index{Point@{Point}!projection@{projection}}
+\index{projection@{projection}!Point@{Point}}
+\subsubsection{\texorpdfstring{projection()}{projection()}}
+{\footnotesize\ttfamily void Point\+::projection (\begin{DoxyParamCaption}\item[{PJ $\ast$}]{P,  }\item[{P\+J\+\_\+\+C\+O\+O\+RD}]{coord\+\_\+wgs84,  }\item[{P\+J\+\_\+\+C\+O\+O\+RD}]{coord\+\_\+lambert93 }\end{DoxyParamCaption})}
+
+
+
+Project W\+G\+S84 coordonate\textquotesingle{}s point to lambert 93. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em P} & PJ object \\
+\hline
+{\em coord\+\_\+wgs84} & Coordonate to project, P\+J\+\_\+\+C\+O\+O\+RD object \\
+\hline
+{\em coord\+\_\+lambert93} & Coordonate projected, P\+J\+\_\+\+C\+O\+O\+RD object \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+point.\+h\item 
+point.\+cpp\end{DoxyCompactItemize}

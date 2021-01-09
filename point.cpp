@@ -8,9 +8,7 @@ Point::Point()
 }
 void Point::projection(PJ *P, PJ_COORD coord_wgs84, PJ_COORD coord_lambert93)
 { 
-    //Projection de wgs84 to Lambert93
     coord_wgs84 = proj_coord (m_x, m_y, 0, 0); 
-    //Projection
     coord_lambert93 = proj_trans (P, PJ_FWD, coord_wgs84);
     m_x = coord_lambert93.enu.e;
     m_y = coord_lambert93.enu.n;
@@ -82,10 +80,6 @@ int Point::read_g() const
 }
 
 
-void Point::set_z(float value)
-{
-  m_z = value;
-}
 
 istream& operator>>(istream& stream, Point& pt)
 {
