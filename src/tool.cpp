@@ -179,7 +179,7 @@ void create_picture(int picture_lenght,const vector<double> size_MNT, deque<Poin
             picture[i][j] = pt;
         }
     }
-    //Association of each point of theMNT to the boxes of the table
+    //Association of each point of the MNT to the boxes of the table
     int size = map_points.size();
     for (int k = 0; k< size; k++)
     {      
@@ -190,6 +190,7 @@ void create_picture(int picture_lenght,const vector<double> size_MNT, deque<Poin
         // picture[i][j]->set_color_Gray();
         picture[i][j]->set_color_RGB();
     }
+    map_points.clear();
     cout << "End of point allocation" << endl;
     // serialize_map_gray(picture_lenght,picture_head, picture);
     serialize_map_binaire(picture_lenght,picture_head, picture);
