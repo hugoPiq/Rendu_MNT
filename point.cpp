@@ -2,6 +2,9 @@
 #include <iostream>
 Point::Point()
 {   m_z = 0;
+    m_r = 0;
+    m_b = 0;
+    m_g = 0;
 }
 void Point::projection(PJ *P, PJ_COORD coord_wgs84, PJ_COORD coord_lambert93)
 { 
@@ -17,7 +20,10 @@ void Point::normalisation(const vector<double> size_MNT,const int picture_lenght
 {
   m_x = (m_x -size_MNT[2])*(picture_lenght-1)/(size_MNT[3]- size_MNT[2]);
   m_y = (m_y -size_MNT[4])*(picture_head-1)/(size_MNT[5]-size_MNT[4]);
-  m_z = (m_z - size_MNT[0])/(size_MNT[1]-size_MNT[0]);
+  if (m_z !=0)
+  {
+    m_z = (m_z - size_MNT[0])/(size_MNT[1]-size_MNT[0]);
+  }
 }
 
 float Point::read_x()
@@ -34,6 +40,46 @@ float Point::read_z()
   return m_z;
 }
 
+int Point::set_color_Gray()
+{
+  return (int)(255*m_z);
+}
+
+void Point::set_color_RGB()
+{
+  //From https://www.particleincell.com/2014/colormap/
+  if (m_z !=0)
+    {
+      m_z = 1 - m_z;
+    }
+  double a=(1-m_z)/0.25;
+  int  x=(int)floor(a);
+  int y = (int)floor(255*(a-x));
+  switch(x)
+  {
+    case 0: m_r=255;m_g=y;m_b=0;break;
+    case 1: m_r=255-y;m_g=255;m_b=0;break;
+    case 2: m_r=0;m_g=255;m_b=y;break;
+    case 3: m_r=0;m_g=255-y;m_b=255;break;
+    case 4: m_r=0;m_g=0;m_b=255;break;
+  }
+}
+
+
+int Point::read_b()
+{
+  return m_b;
+}
+
+int Point::read_r()
+{
+  return m_r;
+}
+
+int Point::read_g()
+{
+  return m_g;
+}
 
 
 void Point::set_z(float value)
