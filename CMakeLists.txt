@@ -9,14 +9,10 @@ file( # liste des fichiers à compiler
   source_files # fichiers listés dans une variable source_files
   src/*.cpp # forme des fichiers à rechercher
 )
-
 add_executable( # création de l’exécutable binaire du projet
   create_raster # nom du binaire
-  main.cpp # liste des fichiers compilés pour le linking
-  point.cpp
-  tool.cpp
+  src/main.cpp # liste des fichiers compilés pour le linking
+  src/point.cpp
+  src/tool.cpp
 ) 
-
-
-
 target_link_libraries(create_raster proj)
