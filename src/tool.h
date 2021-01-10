@@ -46,4 +46,6 @@ void serialize_map_gray(int picture_lenght, int picture_head,Point*** picture);
 * \param size_MNT dimension: x size, y size, z size of the MNT, vector<double>
 */
 void deserialize_map(const std::string& file_name, deque<Point*> &map_points, vector<double> &size_MNT);
+
+int use(int argc);
 #endif

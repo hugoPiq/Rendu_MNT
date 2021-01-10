@@ -198,3 +198,11 @@ void create_picture(int picture_lenght,const vector<double> size_MNT, deque<Poin
     cout << "End of serialization" << endl;
     cout << "File created: Projection_MNT_color_bin.ppm" << endl;
 }        
+
+
+int use(int argc)
+{
+    int a = 0;
+    a = argc - argc;
+    return a;
+}

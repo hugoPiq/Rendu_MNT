@@ -12,10 +12,8 @@ using namespace std;
  * \class Point
  * \brief A point of the MNT
  * \author Hugo Piquard
- * \date 2020
+ * \date 2021
  */
-
-
 
 class Point
 {

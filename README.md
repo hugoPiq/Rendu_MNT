@@ -2,3 +2,7 @@
 #Projet Hugo Piquard December 2020
 #Generation of a 2D image representing the altitude of a submarine terrain from coordinates.
 #Language: C++
+#To run the programme:
+#First run the build.sh (cmake and make must be installed beforehand)
+#Then launch the executable present in the build folder with the following command: 
+#./create_raster file_name image_length

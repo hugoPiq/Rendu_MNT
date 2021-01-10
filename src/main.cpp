@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 int main(int argc, char *argv[])
 {
     //deque containing each point of the MNT
@@ -14,4 +15,7 @@ int main(int argc, char *argv[])
     vector<double> size_MNT(6);
     deserialize_map(argv[1],map_points,size_MNT); 
     create_picture(atoi(argv[2]),size_MNT, map_points);
+    //To avoid unused parameter compilation   
+    use(argc);
+    return 0;
 }       
