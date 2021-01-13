@@ -104,7 +104,6 @@ void serialize_map_gray(int picture_lenght, int picture_head,Point*** picture)
                 f << picture[i][j]->set_color_Gray() << " ";
             }
         }
-        delete picture;
         f.close();
     }
 }
@@ -132,7 +131,6 @@ void serialize_map_binaire(int picture_lenght, int picture_head,Point*** picture
                 f << (uint8_t)r<< (uint8_t)g << (uint8_t)b;
             }
         }
-        delete picture;
         f.close();
     }
 }
@@ -158,7 +156,7 @@ void serialize_map_ASCII(int picture_lenght, int picture_head,Point*** picture)
                 f <<" "<< r<< " "<< g <<" " << b << " ";
             }
         }
-        delete picture;
+        
         f.close();
     }
 }
@@ -197,8 +195,8 @@ void create_picture(int picture_lenght,const vector<double> size_MNT, deque<Poin
     // serialize_map_ASCII(picture_lenght,picture_head, picture);
     cout << "End of serialization" << endl;
     cout << "File created: Projection_MNT_color_bin.ppm" << endl;
+    delete[] picture;
 }        
-
 
 int use(int argc)
 {
